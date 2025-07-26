@@ -5,8 +5,262 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Волжское Казино у Костра</title>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css" />
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+  <style>
+    /* Базовые стили */
+    body {
+      margin: 0;
+      font-family: 'Orbitron', sans-serif;
+      background: #000 url('https://i.ibb.co/hcW5xtj/fireplace-night.gif') center/cover fixed no-repeat;
+      color: #fff;
+      text-align: center;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: 20px auto;
+      padding: 20px;
+      background-color: rgba(0, 0, 0, 0.75);
+      border-radius: 12px;
+      box-shadow: 0 0 30px #ffcc00;
+    }
+
+    h1 {
+      font-size: 48px;
+      color: #ffcc00;
+      margin-bottom: 10px;
+      text-shadow: 2px 2px #000;
+    }
+
+    label {
+      font-size: 20px;
+    }
+
+    input[type="number"] {
+      margin-left: 8px;
+      padding: 8px;
+      font-size: 18px;
+      width: 110px;
+      border-radius: 8px;
+      border: 2px solid #ffcc00;
+      background: #111;
+      color: #ffcc00;
+      text-align: center;
+    }
+
+    button {
+      margin: 12px 8px 20px;
+      padding: 14px 28px;
+      font-size: 18px;
+      border: none;
+      border-radius: 12px;
+      background: linear-gradient(90deg, #ffcc00 0%, #ff9900 100%);
+      color: #000;
+      box-shadow: 0 0 15px #ffcc00;
+      cursor: pointer;
+      transition: transform 0.3s ease;
+    }
+
+    button:hover:not(:disabled) {
+      transform: scale(1.1);
+      box-shadow: 0 0 30px #ffcc00;
+    }
+
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .game-select {
+      margin: 20px 0 10px;
+    }
+
+    .game-btn {
+      margin: 0 8px;
+      padding: 12px 24px;
+      font-size: 20px;
+      border-radius: 12px;
+      border: 2px solid #ffcc00;
+      background: transparent;
+      color: #ffcc00;
+      cursor: pointer;
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    .game-btn.active,
+    .game-btn:hover {
+      background-color: #ffcc00;
+      color: #000;
+    }
+
+    .game {
+      display: none;
+      margin-top: 20px;
+    }
+
+    .game.active {
+      display: block;
+    }
+
+    /* СЛОТЫ */
+    #slotMachine {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+
+    .reel {
+      width: 70px;
+      height: 100px;
+      overflow: hidden;
+      border-radius: 12px;
+      background: #222;
+      box-shadow: inset 0 0 10px #000;
+      position: relative;
+    }
+
+    .symbols {
+      position: absolute;
+      top: 0;
+      width: 100%;
+      will-change: transform;
+    }
+
+    .symbols > div {
+      height: 33.33px;
+      line-height: 33.33px;
+      font-size: 32px;
+      color: #ffcc00;
+      user-select: none;
+      text-shadow: 1px 1px 2px #000;
+    }
+
+    /* РУЛЕТКА */
+    #rouletteWheel {
+      position: relative;
+      margin: 0 auto 15px;
+      width: 300px;
+      height: 300px;
+    }
+
+    #rouletteCanvas {
+      border-radius: 50%;
+      box-shadow: 0 0 15px #ffcc00;
+    }
+
+    #roulettePointer {
+      position: absolute;
+      top: -10px;
+      left: 50%;
+      width: 0;
+      height: 0;
+      border-left: 15px solid transparent;
+      border-right: 15px solid transparent;
+      border-bottom: 30px solid #ffcc00;
+      transform: translateX(-50%);
+    }
+
+    /* БЛЭКДЖЕК */
+    .cards-container {
+      display: flex;
+      justify-content: center;
+      gap: 40px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+
+    .cardsArea {
+      min-height: 120px;
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      background: #111;
+      padding: 15px;
+      border-radius: 12px;
+      box-shadow: inset 0 0 15px #000;
+    }
+
+    .card {
+      width: 70px;
+      height: 100px;
+      background: #ffcc00;
+      border-radius: 12px;
+      box-shadow: 0 0 15px #aa7d00;
+      font-size: 40px;
+      color: #000;
+      text-align: center;
+      line-height: 100px;
+      user-select: none;
+      position: relative;
+      cursor: default;
+      transition: transform 0.5s ease;
+    }
+
+    .card.red {
+      color: #b20000;
+    }
+
+    .blackjack-buttons {
+      margin-bottom: 20px;
+    }
+
+    #blackjackResult {
+      font-size: 22px;
+      margin-bottom: 15px;
+      font-weight: 700;
+      text-shadow: 1px 1px 3px #000;
+    }
+
+    .history {
+      background: #111;
+      border-radius: 12px;
+      padding: 12px;
+      max-height: 160px;
+      overflow-y: auto;
+      margin-top: 10px;
+      font-size: 14px;
+      text-align: left;
+      box-shadow: inset 0 0 10px #000;
+    }
+
+    /* Адаптивность */
+    @media (max-width: 700px) {
+      h1 {
+        font-size: 36px;
+      }
+      .cards-container {
+        gap: 20px;
+        flex-direction: column;
+        align-items: center;
+      }
+      .cardsArea {
+        min-height: 90px;
+      }
+      .card {
+        width: 50px;
+        height: 72px;
+        font-size: 28px;
+        line-height: 72px;
+      }
+      button, input[type="number"] {
+        width: 90%;
+        font-size: 18px;
+        padding: 12px 0;
+      }
+      #slotMachine {
+        gap: 10px;
+      }
+    }
+
+    @media (max-width: 400px) {
+      input[type="number"] {
+        width: 100%;
+      }
+    }
+  </style>
 </head>
 <body>
   <div class="container">
