@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Волжское Казино у Костра</title>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600&display=swap" rel="stylesheet" />
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Orbitron', sans-serif;
+      background: #000 url('https://i.ibb.co/hcW5xtj/fireplace-night.gif') no-repeat center center fixed;
+      background-size: cover;
+      color: #fff;
+      text-align: center;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: auto;
+      padding: 20px;
+      background: rgba(0, 0, 0, 0.8);
+      border-radius: 16px;
+      box-shadow: 0 0 25px #ffcc00;
+    }
+
+    h1 {
+      font-size: 36px;
+      color: #ffcc00;
+      margin-bottom: 15px;
+      text-shadow: 2px 2px #000;
+    }
+
+    button {
+      margin: 8px;
+      padding: 12px 20px;
+      font-size: 18px;
+      border: none;
+      border-radius: 10px;
+      background: linear-gradient(to right, #ffd700, #ff8c00);
+      color: #000;
+      box-shadow: 0 0 12px #ffcc00;
+      cursor: pointer;
+      transition: transform 0.2s ease;
+    }
+
+    button:hover {
+      transform: scale(1.05);
+    }
+
+    input[type="number"] {
+      padding: 10px;
+      font-size: 16px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      width: 100px;
+    }
+
+    .game {
+      display: none;
+      margin-top: 20px;
+    }
+
+    .cards {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin: 15px 0;
+      flex-wrap: wrap;
+    }
+
+    .card {
+      width: 60px;
+      height: 90px;
+      background: #fff;
+      color: #000;
+      font-size: 24px;
+      line-height: 90px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px #000;
+      transition: transform 0.2s ease;
+    }
+
+    .card.red {
+      color: red;
+    }
+
+    .card:hover {
+      transform: scale(1.1);
+    }
+
+    .history {
+      background: #111;
+      border-radius: 10px;
+      padding: 10px;
+      max-height: 150px;
+      overflow-y: auto;
+      margin-top: 10px;
+      font-size: 14px;
+      text-align: left;
+      border: 1px solid #333;
+    }
+
+    canvas {
+      margin: 20px 0;
+      border-radius: 50%;
+      box-shadow: 0 0 12px #fff;
+      background-color: #222;
+    }
+
+    @media (max-width: 600px) {
+      h1 {
+        font-size: 28px;
+      }
+
+      .card {
+        width: 50px;
+        height: 70px;
+        font-size: 18px;
+        line-height: 70px;
+      }
+
+      button {
+        width: 100%;
+      }
+
+      input[type="number"] {
+        width: 80px;
+      }
+
+      .cards {
+        flex-direction: row;
+        justify-content: center;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <h1>Волжское Казино у Костра</h1>
+    <p>Ваши рубчики: <span id="balanceValue">1000</span> ₽</p>
+    <label>Ставка: <input type="number" id="bet" value="100" min="10" max="1000"></label>
+
+    <div style="margin-top: 10px;">
+      <button onclick="showGame('slots')">🎰 Слоты</button>
+      <button onclick="showGame('roulette')">🎯 Рулетка</button>
+      <button onclick="showGame('blackjack')">🂡 Блэкджек</button>
+    </div>
+
+    <!-- 🎰 СЛОТЫ -->
+    <div id="slots" class="game">
+      <h2>🎰 Игровой автомат</h2>
+      <div class="cards" id="slotReels"></div>
+      <button onclick="playSlots()">Крутить</button>
+      <div class="history" id="slotHistory"></div>
+    </div>
+
+    <!-- 🎯 РУЛЕТКА -->
+    <div id="roulette" class="game">
+      <h2>🎯 Рулетка</h2>
+      <canvas id="rouletteCanvas" width="300" height="300"></canvas>
+      <p>
+        Число (0–36): <input type="number" id="rouletteNumber" min="0" max="36">
+      </p>
+      <button onclick="spinRoulette()">Крутить рулетку</button>
+      <div class="history" id="rouletteHistory"></div>
+    </div>
+
+    <!-- 🂡 БЛЭКДЖЕК -->
+    <div id="blackjack" class="game">
+      <h2>🂡 Блэкджек</h2>
+      <p id="blackjackResult"></p>
+      <div>
+        <h3>Дилер</h3>
+        <div class="cards" id="dealerCards"></div>
+      </div>
+      <div>
+        <h3>Игрок</h3>
+        <div class="cards" id="playerCards"></div>
+      </div>
+      <button id="dealBtn">Сдать</button>
+      <button id="hitBtn" disabled>Ещё</button>
+      <button id="standBtn" disabled>Хватит</button>
+      <div class="history" id="blackjackHistory"></div>
+    </div>
+  </div>
+
+<script>
+  let balance = 1000;
+  const balanceValue = document.getElementById("balanceValue");
+  const betInput = document.getElementById("bet");
+  const currentBet = () => Math.min(balance, parseInt(betInput.value) || 0);
+  function updateBalance() {
+    balanceValue.textContent = balance;
+  }
+
+  function showGame(id) {
+    document.querySelectorAll(".game").forEach(el => el.style.display = "none");
+    document.getElementById(id).style.display = "block";
+    if (id === "blackjack") setupBlackjack();
+  }
+
+  function logHistory(game, text) {
+    const el = document.getElementById(game + "History");
+    const div = document.createElement("div");
+    div.textContent = new Date().toLocaleTimeString() + ": " + text;
+    el.prepend(div);
+  }
+
+  // === СЛОТЫ ===
+  const slotSymbols = ["🍺", "🥃", "🍷", "🍖", "🍗", "🐟", "🍾", "🍻"];
+  function playSlots() {
+    const bet = currentBet();
+    if (bet > balance) {
+      Swal.fire("Ошибка", "Недостаточно рубчиков!", "error");
+      return;
+    }
+    balance -= bet;
+    updateBalance();
+    const reels = document.getElementById("slotReels");
+    reels.innerHTML = "";
+
+    const result = [];
+    for (let i = 0; i < 3; i++) {
+      const div = document.createElement("div");
+      div.className = "card";
+      div.textContent = "🎲";
+      reels.appendChild(div);
+      result.push(div);
+    }
+
+    let steps = 10 + Math.floor(Math.random() * 10);
+    let symbols = [];
+
+    let spin = setInterval(() => {
+      symbols = [];
+      for (let i = 0; i < 3; i++) {
+        const sym = slotSymbols[Math.floor(Math.random() * slotSymbols.length)];
+        result[i].textContent = sym;
+        symbols.push(sym);
+      }
+      steps--;
+      if (steps <= 0) {
+        clearInterval(spin);
+        if (symbols.every(s => s === symbols[0])) {
+          const win = bet * 5;
+          balance += win;
+          updateBalance();
+          Swal.fire("Поздравляем!", `Вы выиграли ${win} ₽!`, "success");
+          logHistory("slot", `Выигрыш: +${win} ₽`);
+        } else {
+          Swal.fire("Увы", "Попробуйте снова!", "info");
+          logHistory("slot", `Проигрыш: -${bet} ₽`);
+        }
+      }
+    }, 100);
+  }
+
+  // === РУЛЕТКА ===
+  const rouletteCanvas = document.getElementById("rouletteCanvas");
+  const ctx = rouletteCanvas.getContext("2d");
+  const segments = 37;
+  const colors = Array.from({ length: segments }, (_, i) =>
+    i === 0 ? "#0a0" : i % 2 === 0 ? "#000" : "#c00"
+  );
+  const centerX = rouletteCanvas.width / 2;
+  const centerY = rouletteCanvas.height / 2;
+  const radius = 140;
+
+  function drawRoulette(angle = 0) {
+    const step = (2 * Math.PI) / segments;
+    ctx.clearRect(0, 0, rouletteCanvas.width, rouletteCanvas.height);
+    for (let i = 0; i < segments; i++) {
+      const start = i * step + angle;
+      const end = start + step;
+      ctx.beginPath();
+      ctx.moveTo(centerX, centerY);
+      ctx.arc(centerX, centerY, radius, start, end);
+      ctx.closePath();
+      ctx.fillStyle = colors[i];
+      ctx.fill();
+      ctx.fillStyle = "#fff";
+      ctx.font = "12px Orbitron";
+      ctx.save();
+      ctx.translate(centerX, centerY);
+      ctx.rotate(start + step / 2);
+      ctx.textAlign = "right";
+      ctx.fillText(i, radius - 10, 4);
+      ctx.restore();
+    }
+  }
+
+  let rouletteAngle = 0;
+  function spinRoulette() {
+    const bet = currentBet();
+    const guess = parseInt(document.getElementById("rouletteNumber").value);
+    if (isNaN(guess) || guess < 0 || guess > 36) {
+      Swal.fire("Ошибка", "Введите число от 0 до 36", "warning");
+      return;
+    }
+    if (bet > balance) {
+      Swal.fire("Ошибка", "Недостаточно рубчиков!", "error");
+      return;
+    }
+    balance -= bet;
+    updateBalance();
+
+    let spin = 0;
+    const spinMax = 60;
+    function animate() {
+      rouletteAngle += 0.2 + (spinMax - spin) * 0.005;
+      drawRoulette(rouletteAngle);
+      spin++;
+      if (spin < spinMax) requestAnimationFrame(animate);
+      else {
+        const final = (segments - Math.floor((rouletteAngle % (2 * Math.PI)) / ((2 * Math.PI) / segments))) % segments;
+        if (final === guess) {
+          const win = bet * 36;
+          balance += win;
+          updateBalance();
+          Swal.fire("Поздравляем!", `Выпало ${final}. Вы выиграли ${win} ₽!`, "success");
+          logHistory("roulette", `Выигрыш: +${win} ₽`);
+        } else {
+          Swal.fire("Увы", `Выпало ${final}. Вы проиграли.`, "info");
+          logHistory("roulette", `Проигрыш: -${bet} ₽`);
+        }
+      }
+    }
+    animate();
+  }
+  drawRoulette();
+
+  // === БЛЭКДЖЕК ===
+  const suits = ["♠", "♥", "♦", "♣"];
+  const ranks = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"];
+  let deck = [], player = [], dealer = [];
+  const playerCards = document.getElementById("playerCards");
+  const dealerCards = document.getElementById("dealerCards");
+  const resultEl = document.getElementById("blackjackResult");
+  const dealBtn = document.getElementById("dealBtn");
+  const hitBtn = document.getElementById("hitBtn");
+  const standBtn = document.getElementById("standBtn");
+
+  function createDeck() {
+    deck = [];
+    for (let s of suits)
+      for (let r of ranks)
+        deck.push({ r, s });
+    deck.sort(() => Math.random() - 0.5);
+  }
+
+  function value(hand) {
+    let val = 0, aces = 0;
+    for (let c of hand) {
+      if (c.r === "A") { val += 11; aces++; }
+      else if ("JQK".includes(c.r)) val += 10;
+      else val += +c.r;
+    }
+    while (val > 21 && aces--) val -= 10;
+    return val;
+  }
+
+  function render(hand, el, hideFirst = false) {
+    el.innerHTML = "";
+    hand.forEach((c, i) => {
+      const div = document.createElement("div");
+      div.className = "card";
+      if ((c.s === "♥" || c.s === "♦") && !(hideFirst && i === 0)) div.classList.add("red");
+      div.textContent = hideFirst && i === 0 ? "🂠" : c.r + c.s;
+      el.appendChild(div);
+    });
+  }
+
+  function setupBlackjack() {
+    player = []; dealer = []; resultEl.textContent = "";
+    hitBtn.disabled = standBtn.disabled = true;
+  }
+
+  function deal() {
+    const bet = currentBet();
+    if (bet > balance) {
+      Swal.fire("Ошибка", "Недостаточно рубчиков!", "error");
+      return;
+    }
+    balance -= bet;
+    updateBalance();
+    createDeck();
+    player = [deck.pop(), deck.pop()];
+    dealer = [deck.pop(), deck.pop()];
+    render(player, playerCards);
+    render(dealer, dealerCards, true);
+    hitBtn.disabled = standBtn.disabled = false;
+  }
+
+  function hit() {
+    player.push(deck.pop());
+    render(player, playerCards);
+    if (value(player) > 21) {
+      resultEl.textContent = "Перебор! Проигрыш.";
+      hitBtn.disabled = standBtn.disabled = true;
+    }
+  }
+
+  function stand() {
+    render(dealer, dealerCards);
+    while (value(dealer) < 17) {
+      dealer.push(deck.pop());
+      render(dealer, dealerCards);
+    }
+    const pv = value(player), dv = value(dealer);
+    if (dv > 21 || pv > dv) {
+      balance += currentBet() * 2;
+      resultEl.textContent = "Вы выиграли!";
+    } else if (pv === dv) {
+      balance += currentBet();
+      resultEl.textContent = "Ничья.";
+    } else {
+      resultEl.textContent = "Дилер выиграл.";
+    }
+    updateBalance();
+    hitBtn.disabled = standBtn.disabled = true;
+  }
+
+  dealBtn.onclick = deal;
+  hitBtn.onclick = hit;
+  standBtn.onclick = stand;
+</script>
+</body>
+</html>
