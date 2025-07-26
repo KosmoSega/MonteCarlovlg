@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Волжское Казино у Костра</title>
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
@@ -13,63 +13,61 @@
     <h1>Волжское Казино у Костра</h1>
     <p id="balance">Ваши рубчики: <span id="balanceValue">1000</span> ₽</p>
 
-    <label>Ставка: <input type="number" id="bet" value="100" min="10" max="1000"></label>
-    <div>
-      <button onclick="playClick(); showGame('slots')">🎰 Автомат</button>
-      <button onclick="playClick(); showGame('roulette')">🎯 Рулетка</button>
-      <button onclick="playClick(); showGame('blackjack')">🂡 Блэкджек</button>
+    <label for="bet">Ставка: </label>
+    <input type="number" id="bet" value="100" min="10" max="1000" />
+
+    <div class="game-select">
+      <button data-game="slots" class="game-btn active">🎰 Автомат</button>
+      <button data-game="roulette" class="game-btn">🎯 Рулетка</button>
+      <button data-game="blackjack" class="game-btn">🂡 Блэкджек</button>
     </div>
 
-    <!-- Слоты -->
-    <div id="slots" class="game">
+    <!-- СЛОТЫ -->
+    <section id="slots" class="game active">
       <h2>🎰 Игровой автомат</h2>
       <div id="slotMachine">
         <div class="reel"><div class="symbols"></div></div>
         <div class="reel"><div class="symbols"></div></div>
         <div class="reel"><div class="symbols"></div></div>
       </div>
-      <button onclick="playClick(); playSlots()">Крутить</button>
+      <button id="spinSlotsBtn">Крутить</button>
       <div class="history" id="slotHistory"></div>
-    </div>
+    </section>
 
-    <!-- Рулетка -->
-    <div id="roulette" class="game">
+    <!-- РУЛЕТКА -->
+    <section id="roulette" class="game">
       <h2>🎯 Рулетка</h2>
       <div id="rouletteWheel">
-        <canvas id="rouletteCanvas" width="300" height="300"></canvas>
+        <canvas id="rouletteCanvas" width="300" height="300" aria-label="Рулетка"></canvas>
         <div id="roulettePointer"></div>
       </div>
       <input type="number" id="rouletteNumber" placeholder="Число 0-36" min="0" max="36" />
-      <button onclick="playClick(); playRoulette()">Крутить рулетку</button>
+      <button id="spinRouletteBtn">Крутить рулетку</button>
       <div class="history" id="rouletteHistory"></div>
-    </div>
+    </section>
 
-    <!-- Блэкджек -->
-    <div id="blackjack" class="game">
+    <!-- БЛЭКДЖЕК -->
+    <section id="blackjack" class="game">
       <h2>🂡 Блэкджек</h2>
       <p id="blackjackResult"></p>
-      <div>
-        <h3>Дилер</h3>
-        <div id="dealerCards" class="cardsArea"></div>
-      </div>
-      <div>
-        <h3>Игрок</h3>
-        <div id="playerCards" class="cardsArea"></div>
+      <div class="cards-container">
+        <div>
+          <h3>Дилер</h3>
+          <div id="dealerCards" class="cardsArea"></div>
+        </div>
+        <div>
+          <h3>Игрок</h3>
+          <div id="playerCards" class="cardsArea"></div>
+        </div>
       </div>
       <div class="blackjack-buttons">
-        <button id="dealBtn" onclick="playClick(); dealBlackjack()">Сдать</button>
-        <button id="hitBtn" onclick="playClick(); hitBlackjack()" disabled>Ещё</button>
-        <button id="standBtn" onclick="playClick(); standBlackjack()" disabled>Хватит</button>
+        <button id="dealBtn">Сдать</button>
+        <button id="hitBtn" disabled>Ещё</button>
+        <button id="standBtn" disabled>Хватит</button>
       </div>
       <div class="history" id="blackjackHistory"></div>
-    </div>
+    </section>
   </div>
-
-  <!-- Звуки -->
-  <audio id="winSound" src="https://cdn.jsdelivr.net/gh/naptha/talkbox@master/sounds/bling.wav"></audio>
-  <audio id="loseSound" src="https://cdn.jsdelivr.net/gh/CodeExplainedRepo/audio@main/wrong.mp3"></audio>
-  <audio id="spinSound" src="https://cdn.jsdelivr.net/gh/SebLague/AudioSamples@master/Reels/ReelSpin1.wav"></audio>
-  <audio id="clickSound" src="https://cdn.jsdelivr.net/gh/zapsplat/free-sound-effects@master/interface_sound_effects/button_click.mp3"></audio>
 
   <script src="script.js"></script>
 </body>

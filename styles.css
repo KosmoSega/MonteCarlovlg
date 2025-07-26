@@ -1,3 +1,4 @@
+/* Базовые стили */
 body {
   margin: 0;
   font-family: 'Orbitron', sans-serif;
@@ -10,7 +11,7 @@ body {
   max-width: 1000px;
   margin: 20px auto;
   padding: 20px;
-  background-color: rgba(0, 0, 0, 0.7);
+  background-color: rgba(0, 0, 0, 0.75);
   border-radius: 12px;
   box-shadow: 0 0 30px #ffcc00;
 }
@@ -22,40 +23,65 @@ h1 {
   text-shadow: 2px 2px #000;
 }
 
+label {
+  font-size: 20px;
+}
+
+input[type="number"] {
+  margin-left: 8px;
+  padding: 8px;
+  font-size: 18px;
+  width: 110px;
+  border-radius: 8px;
+  border: 2px solid #ffcc00;
+  background: #111;
+  color: #ffcc00;
+  text-align: center;
+}
+
 button {
-  margin: 8px;
-  padding: 12px 20px;
+  margin: 12px 8px 20px;
+  padding: 14px 28px;
   font-size: 18px;
   border: none;
-  border-radius: 8px;
-  background: linear-gradient(to right, #ffcc00, #ff9900);
+  border-radius: 12px;
+  background: linear-gradient(90deg, #ffcc00 0%, #ff9900 100%);
   color: #000;
-  box-shadow: 0 0 10px #ffcc00;
+  box-shadow: 0 0 15px #ffcc00;
   cursor: pointer;
   transition: transform 0.3s ease;
 }
 
 button:hover:not(:disabled) {
-  transform: scale(1.08);
-  box-shadow: 0 0 20px #ffcc00;
+  transform: scale(1.1);
+  box-shadow: 0 0 30px #ffcc00;
 }
 
 button:disabled {
   opacity: 0.5;
-  cursor: default;
+  cursor: not-allowed;
 }
 
-input[type="number"] {
-  padding: 8px;
-  font-size: 16px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-  width: 100px;
+.game-select {
+  margin: 20px 0 10px;
 }
 
-#balance {
+.game-btn {
+  margin: 0 8px;
+  padding: 12px 24px;
   font-size: 20px;
-  margin-bottom: 10px;
+  border-radius: 12px;
+  border: 2px solid #ffcc00;
+  background: transparent;
+  color: #ffcc00;
+  cursor: pointer;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.game-btn.active,
+.game-btn:hover {
+  background-color: #ffcc00;
+  color: #000;
 }
 
 .game {
@@ -63,33 +89,45 @@ input[type="number"] {
   margin-top: 20px;
 }
 
-/* Слоты */
+.game.active {
+  display: block;
+}
+
+/* СЛОТЫ */
 #slotMachine {
   display: flex;
   justify-content: center;
   gap: 15px;
-  margin: 20px 0;
+  margin-bottom: 20px;
 }
 
 .reel {
   width: 70px;
   height: 100px;
   overflow: hidden;
-  border-radius: 10px;
+  border-radius: 12px;
   background: #222;
-  box-shadow: 0 0 10px #000 inset;
+  box-shadow: inset 0 0 10px #000;
   position: relative;
+}
+
+.symbols {
+  position: absolute;
+  top: 0;
+  width: 100%;
+  will-change: transform;
 }
 
 .symbols > div {
   height: 33.33px;
   line-height: 33.33px;
-  font-size: 28px;
-  color: #fff;
+  font-size: 32px;
+  color: #ffcc00;
   user-select: none;
+  text-shadow: 1px 1px 2px #000;
 }
 
-/* Рулетка */
+/* РУЛЕТКА */
 #rouletteWheel {
   position: relative;
   margin: 0 auto 15px;
@@ -104,7 +142,7 @@ input[type="number"] {
 
 #roulettePointer {
   position: absolute;
-  top: -5px;
+  top: -10px;
   left: 50%;
   width: 0;
   height: 0;
@@ -114,64 +152,101 @@ input[type="number"] {
   transform: translateX(-50%);
 }
 
-/* Блэкджек */
-.cardsArea {
-  min-height: 120px;
-  margin: 10px auto 20px;
+/* БЛЭКДЖЕК */
+.cards-container {
   display: flex;
   justify-content: center;
-  gap: 10px;
+  gap: 40px;
   flex-wrap: wrap;
-  position: relative;
+  margin-bottom: 20px;
+}
+
+.cardsArea {
+  min-height: 120px;
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  background: #111;
+  padding: 15px;
+  border-radius: 12px;
+  box-shadow: inset 0 0 15px #000;
 }
 
 .card {
   width: 70px;
   height: 100px;
-  background: #fff;
-  border-radius: 10px;
-  box-shadow: 0 0 10px #000;
+  background: #ffcc00;
+  border-radius: 12px;
+  box-shadow: 0 0 15px #aa7d00;
   font-size: 40px;
-  color: black;
+  color: #000;
   text-align: center;
   line-height: 100px;
   user-select: none;
   position: relative;
   cursor: default;
-  transition: transform 0.6s ease, top 0.6s ease, left 0.6s ease;
+  transition: transform 0.5s ease;
 }
 
 .card.red {
-  color: red;
+  color: #b20000;
 }
 
 .blackjack-buttons {
-  margin-top: 10px;
+  margin-bottom: 20px;
+}
+
+#blackjackResult {
+  font-size: 22px;
+  margin-bottom: 15px;
+  font-weight: 700;
+  text-shadow: 1px 1px 3px #000;
 }
 
 .history {
   background: #111;
-  border-radius: 8px;
-  padding: 10px;
-  max-height: 150px;
+  border-radius: 12px;
+  padding: 12px;
+  max-height: 160px;
   overflow-y: auto;
   margin-top: 10px;
   font-size: 14px;
   text-align: left;
+  box-shadow: inset 0 0 10px #000;
 }
 
-/* Мобильная адаптация */
-@media (max-width: 600px) {
+/* Адаптивность */
+@media (max-width: 700px) {
+  h1 {
+    font-size: 36px;
+  }
+  .cards-container {
+    gap: 20px;
+    flex-direction: column;
+    align-items: center;
+  }
+  .cardsArea {
+    min-height: 90px;
+  }
   .card {
     width: 50px;
-    height: 70px;
+    height: 72px;
     font-size: 28px;
-    line-height: 70px;
+    line-height: 72px;
   }
-  button {
-    width: 100%;
+  button, input[type="number"] {
+    width: 90%;
+    font-size: 18px;
+    padding: 12px 0;
   }
+  #slotMachine {
+    gap: 10px;
+  }
+}
+
+@media (max-width: 400px) {
   input[type="number"] {
-    width: 80px;
+    width: 100%;
   }
 }
