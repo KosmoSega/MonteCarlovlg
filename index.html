@@ -116,6 +116,16 @@
       background-color: #222;
     }
 
+    @keyframes flash {
+      0% { color: #fff; }
+      50% { color: #ffcc00; }
+      100% { color: #fff; }
+    }
+
+    .balance-update {
+      animation: flash 0.5s ease;
+    }
+
     @media (max-width: 600px) {
       h1 {
         font-size: 28px;
@@ -147,7 +157,7 @@
 <body>
   <div class="container">
     <h1>Волжское Казино у Костра</h1>
-    <p>Ваши рубчики: <span id="balanceValue">1000</span> ₽</p>
+    <p>Ваши рубчики: <span id="balanceValue">1000</span> ₽ <button id="resetBalanceBtn" title="Сбросить баланс">🔄</button></p>
     <label>Ставка: <input type="number" id="bet" value="100" min="10" max="1000"></label>
 
     <div style="margin-top: 10px;">
@@ -195,12 +205,15 @@
   </div>
 
 <script>
-  let balance = 1000;
+  let balance = parseInt(localStorage.getItem("balance") || "1000");
   const balanceValue = document.getElementById("balanceValue");
   const betInput = document.getElementById("bet");
   const currentBet = () => Math.min(balance, parseInt(betInput.value) || 0);
   function updateBalance() {
     balanceValue.textContent = balance;
+    balanceValue.classList.add("balance-update");
+    setTimeout(() => balanceValue.classList.remove("balance-update"), 500);
+    localStorage.setItem("balance", balance);
   }
 
   function showGame(id) {
@@ -215,6 +228,29 @@
     div.textContent = new Date().toLocaleTimeString() + ": " + text;
     el.prepend(div);
   }
+
+  function playSound(type) {
+    const el = document.getElementById(type === "win" ? "soundWin" : "soundLoss");
+    el.currentTime = 0;
+    el.play();
+  }
+
+  function resetBalance() {
+    Swal.fire({
+      title: "Сбросить баланс?",
+      text: "Ваш текущий баланс будет установлен на 1000 ₽.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Да, сбросить!"
+    }).then(res => {
+      if (res.isConfirmed) {
+        balance = 1000;
+        updateBalance();
+        Swal.fire("Готово!", "Баланс сброшен.", "success");
+      }
+    });
+  }
+  document.getElementById("resetBalanceBtn").addEventListener("click", resetBalance);
 
   // === СЛОТЫ ===
   const slotSymbols = ["🍺", "🥃", "🍷", "🍖", "🍗", "🐟", "🍾", "🍻"];
@@ -257,9 +293,11 @@
           updateBalance();
           Swal.fire("Поздравляем!", `Вы выиграли ${win} ₽!`, "success");
           logHistory("slot", `Выигрыш: +${win} ₽`);
+          playSound("win");
         } else {
           Swal.fire("Увы", "Попробуйте снова!", "info");
           logHistory("slot", `Проигрыш: -${bet} ₽`);
+          playSound("loss");
         }
       }
     }, 100);
@@ -329,9 +367,11 @@
           updateBalance();
           Swal.fire("Поздравляем!", `Выпало ${final}. Вы выиграли ${win} ₽!`, "success");
           logHistory("roulette", `Выигрыш: +${win} ₽`);
+          playSound("win");
         } else {
           Swal.fire("Увы", `Выпало ${final}. Вы проиграли.`, "info");
           logHistory("roulette", `Проигрыш: -${bet} ₽`);
+          playSound("loss");
         }
       }
     }
@@ -407,6 +447,7 @@
     if (value(player) > 21) {
       resultEl.textContent = "Перебор! Проигрыш.";
       hitBtn.disabled = standBtn.disabled = true;
+      playSound("loss");
     }
   }
 
@@ -420,13 +461,16 @@
     if (dv > 21 || pv > dv) {
       balance += currentBet() * 2;
       resultEl.textContent = "Вы выиграли!";
+      playSound("win");
     } else if (pv === dv) {
       balance += currentBet();
       resultEl.textContent = "Ничья.";
     } else {
       resultEl.textContent = "Дилер выиграл.";
+      playSound("loss");
     }
     updateBalance();
+    logHistory("blackjack", resultEl.textContent);
     hitBtn.disabled = standBtn.disabled = true;
   }
 
@@ -434,5 +478,7 @@
   hitBtn.onclick = hit;
   standBtn.onclick = stand;
 </script>
+<audio id="soundWin" src="https://assets.mixkit.co/sfx/preview/mixkit-winning-notification-2018-1091.mp3" preload="auto"></audio>
+<audio id="soundLoss" src="https://assets.mixkit.co/sfx/preview/mixkit-failure-arcade-alert-sound-240.mp3" preload="auto"></audio>
 </body>
 </html>
