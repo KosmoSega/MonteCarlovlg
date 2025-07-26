@@ -1,309 +1,76 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Волжское Казино у Костра</title>
-
-  <!-- Шрифт -->
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600&display=swap" rel="stylesheet">
-  <!-- SweetAlert2 -->
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
-  <style>
-    body {
-      margin: 0;
-      font-family: 'Orbitron', sans-serif;
-      background: #000;
-      color: #fff;
-      text-align: center;
-      background-image: url('https://i.ibb.co/hcW5xtj/fireplace-night.gif');
-      background-size: cover;
-      background-position: center;
-      background-attachment: fixed;
-    }
-
-    .container {
-      max-width: 1000px;
-      margin: auto;
-      padding: 20px;
-      background-color: rgba(0, 0, 0, 0.7);
-      border-radius: 12px;
-      box-shadow: 0 0 30px #ffcc00;
-    }
-
-    h1 {
-      font-size: 48px;
-      color: #ffcc00;
-      margin-bottom: 10px;
-      text-shadow: 2px 2px #000;
-    }
-
-    button {
-      margin: 8px;
-      padding: 12px 20px;
-      font-size: 18px;
-      border: none;
-      border-radius: 8px;
-      background: linear-gradient(to right, #ffcc00, #ff9900);
-      color: #000;
-      box-shadow: 0 0 10px #ffcc00;
-      cursor: pointer;
-      transition: transform 0.3s ease;
-    }
-
-    button:hover {
-      transform: scale(1.08);
-      box-shadow: 0 0 20px #ffcc00;
-    }
-
-    input[type="number"] {
-      padding: 8px;
-      font-size: 16px;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-      width: 100px;
-    }
-
-    #balance {
-      font-size: 20px;
-      margin-bottom: 10px;
-    }
-
-    .game {
-      display: none;
-      margin-top: 20px;
-    }
-
-    .cards {
-      display: flex;
-      justify-content: center;
-      gap: 10px;
-      margin: 15px 0;
-      flex-wrap: wrap;
-    }
-
-    .card {
-      width: 70px;
-      height: 100px;
-      background: #fff;
-      color: #000;
-      font-size: 28px;
-      line-height: 100px;
-      border-radius: 10px;
-      box-shadow: 0 0 10px #000;
-      transition: transform 0.3s ease;
-    }
-
-    .card.red {
-      color: red;
-    }
-
-    .card.black {
-      color: black;
-    }
-
-    .card:hover {
-      transform: scale(1.1);
-    }
-
-    .card-back {
-      background: #333;
-      color: transparent;
-    }
-
-    .history {
-      background: #111;
-      border-radius: 8px;
-      padding: 10px;
-      max-height: 150px;
-      overflow-y: auto;
-      margin-top: 10px;
-      font-size: 14px;
-      text-align: left;
-    }
-
-    @media (max-width: 600px) {
-      .card {
-        width: 50px;
-        height: 70px;
-        font-size: 20px;
-        line-height: 70px;
-      }
-
-      button {
-        width: 100%;
-      }
-
-      input[type="number"] {
-        width: 80px;
-      }
-    }
-  </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Волжское Казино у Костра</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
-
 <body>
-  <div class="container">
-    <h1>Волжское Казино у Костра</h1>
-    <p id="balance">Ваши рубчики: <span id="balanceValue">1000</span> ₽</p>
+  <div class="container">
+    <h1>Волжское Казино у Костра</h1>
+    <p id="balance">Ваши рубчики: <span id="balanceValue">1000</span> ₽</p>
 
-    <label>Ставка: <input type="number" id="bet" value="100" min="10" max="1000"></label>
-    <div>
-      <button onclick="playClick(); showGame('slots')">🎰 Автомат</button>
-      <button onclick="playClick(); showGame('roulette')">🎯 Рулетка</button>
-      <button onclick="playClick(); showGame('blackjack')">🂡 Блэкджек</button>
-    </div>
+    <label>Ставка: <input type="number" id="bet" value="100" min="10" max="1000"></label>
+    <div>
+      <button onclick="playClick(); showGame('slots')">🎰 Автомат</button>
+      <button onclick="playClick(); showGame('roulette')">🎯 Рулетка</button>
+      <button onclick="playClick(); showGame('blackjack')">🂡 Блэкджек</button>
+    </div>
 
-    <div id="slots" class="game">
-      <h2>🎰 Игровой автомат</h2>
-      <p id="slotResult"></p>
-      <div class="cards" id="slotReels"></div>
-      <button onclick="playClick(); playSlots()">Крутить</button>
-      <div class="history" id="slotHistory"></div>
-    </div>
+    <!-- Слоты -->
+    <div id="slots" class="game">
+      <h2>🎰 Игровой автомат</h2>
+      <div id="slotMachine">
+        <div class="reel"><div class="symbols"></div></div>
+        <div class="reel"><div class="symbols"></div></div>
+        <div class="reel"><div class="symbols"></div></div>
+      </div>
+      <button onclick="playClick(); playSlots()">Крутить</button>
+      <div class="history" id="slotHistory"></div>
+    </div>
 
-    <div id="roulette" class="game">
-      <h2>🎯 Рулетка</h2>
-      <p id="rouletteResult"></p>
-      <input type="number" id="rouletteNumber" placeholder="Число 0-36" min="0" max="36">
-      <button onclick="playClick(); playRoulette()">Крутить рулетку</button>
-      <div class="history" id="rouletteHistory"></div>
-    </div>
+    <!-- Рулетка -->
+    <div id="roulette" class="game">
+      <h2>🎯 Рулетка</h2>
+      <div id="rouletteWheel">
+        <canvas id="rouletteCanvas" width="300" height="300"></canvas>
+        <div id="roulettePointer"></div>
+      </div>
+      <input type="number" id="rouletteNumber" placeholder="Число 0-36" min="0" max="36" />
+      <button onclick="playClick(); playRoulette()">Крутить рулетку</button>
+      <div class="history" id="rouletteHistory"></div>
+    </div>
 
-    <div id="blackjack" class="game">
-      <h2>🂡 Блэкджек</h2>
-      <p id="blackjackResult"></p>
-      <div>
-        <h3>Дилер</h3>
-        <div class="cards" id="dealerCards"></div>
-      </div>
-      <div>
-        <h3>Игрок</h3>
-        <div class="cards" id="playerCards"></div>
-      </div>
-      <button id="hitBtn">Ещё</button>
-      <button id="standBtn">Хватит</button>
-      <button id="dealBtn">Сдать</button>
-      <div class="history" id="blackjackHistory"></div>
-    </div>
-  </div>
+    <!-- Блэкджек -->
+    <div id="blackjack" class="game">
+      <h2>🂡 Блэкджек</h2>
+      <p id="blackjackResult"></p>
+      <div>
+        <h3>Дилер</h3>
+        <div id="dealerCards" class="cardsArea"></div>
+      </div>
+      <div>
+        <h3>Игрок</h3>
+        <div id="playerCards" class="cardsArea"></div>
+      </div>
+      <div class="blackjack-buttons">
+        <button id="dealBtn" onclick="playClick(); dealBlackjack()">Сдать</button>
+        <button id="hitBtn" onclick="playClick(); hitBlackjack()" disabled>Ещё</button>
+        <button id="standBtn" onclick="playClick(); standBlackjack()" disabled>Хватит</button>
+      </div>
+      <div class="history" id="blackjackHistory"></div>
+    </div>
+  </div>
 
-  <!-- 🔊 Звуки через CDN -->
-  <audio id="winSound" src="https://cdn.jsdelivr.net/gh/naptha/talkbox@master/sounds/bling.wav"></audio>
-  <audio id="loseSound" src="https://cdn.jsdelivr.net/gh/CodeExplainedRepo/audio@main/wrong.mp3"></audio>
-  <audio id="spinSound" src="https://cdn.jsdelivr.net/gh/SebLague/AudioSamples@master/Reels/ReelSpin1.wav"></audio>
-  <audio id="clickSound" src="https://cdn.jsdelivr.net/gh/zapsplat/free-sound-effects@master/interface_sound_effects/button_click.mp3"></audio>
+  <!-- Звуки -->
+  <audio id="winSound" src="https://cdn.jsdelivr.net/gh/naptha/talkbox@master/sounds/bling.wav"></audio>
+  <audio id="loseSound" src="https://cdn.jsdelivr.net/gh/CodeExplainedRepo/audio@main/wrong.mp3"></audio>
+  <audio id="spinSound" src="https://cdn.jsdelivr.net/gh/SebLague/AudioSamples@master/Reels/ReelSpin1.wav"></audio>
+  <audio id="clickSound" src="https://cdn.jsdelivr.net/gh/zapsplat/free-sound-effects@master/interface_sound_effects/button_click.mp3"></audio>
 
-  <script>
-    let balance = 1000;
-    const balanceValue = document.getElementById("balanceValue");
-    const betInput = document.getElementById("bet");
-    const currentBet = () => Math.min(balance, parseInt(betInput.value) || 0);
-
-    function updateBalance() {
-      balanceValue.textContent = balance;
-    }
-
-    function playSound(id) {
-      const a = document.getElementById(id);
-      if (a) {
-        a.pause();
-        a.currentTime = 0;
-        a.play();
-      }
-    }
-
-    function playClick() {
-      playSound("clickSound");
-    }
-
-    function showGame(id) {
-      document.querySelectorAll(".game").forEach(g => g.style.display = "none");
-      document.getElementById(id).style.display = "block";
-      if (id === "blackjack") setupBlackjack();
-    }
-
-    function logHistory(game, text) {
-      const el = document.getElementById(game + 'History');
-      const entry = document.createElement('div');
-      entry.textContent = new Date().toLocaleTimeString() + ": " + text;
-      el.prepend(entry);
-    }
-
-    const slotSymbols = ["🍖", "🍺", "🍷", "🚤", "🌊", "🥃", "🍻", "🍗"];
-    function playSlots() {
-      playSound("spinSound");
-      const reels = document.getElementById("slotReels");
-      reels.innerHTML = "";
-      const result = [];
-
-      if (balance < currentBet()) {
-        Swal.fire("Ошибка", "Недостаточно рубчиков!", "error");
-        return;
-      }
-
-      balance -= currentBet();
-      updateBalance();
-
-      for (let i = 0; i < 3; i++) {
-        const symbol = slotSymbols[Math.floor(Math.random() * slotSymbols.length)];
-        result.push(symbol);
-        const div = document.createElement("div");
-        div.className = "card";
-        div.textContent = symbol;
-        reels.appendChild(div);
-      }
-
-      const allSame = result.every(s => s === result[0]);
-      if (allSame) {
-        const win = currentBet() * 5;
-        balance += win;
-        updateBalance();
-        logHistory("slot", `Выигрыш: +${win} ₽`);
-        playSound("winSound");
-        Swal.fire("Поздравляем!", `Вы выиграли ${win} ₽!`, "success");
-      } else {
-        logHistory("slot", `Проигрыш: -${currentBet()} ₽`);
-        playSound("loseSound");
-        document.getElementById("slotResult").textContent = "Попробуйте снова!";
-      }
-    }
-
-    function playRoulette() {
-      const number = parseInt(document.getElementById("rouletteNumber").value);
-      if (isNaN(number) || number < 0 || number > 36) {
-        Swal.fire("Ошибка", "Введите число от 0 до 36", "warning");
-        return;
-      }
-
-      if (balance < currentBet()) {
-        Swal.fire("Ошибка", "Недостаточно рубчиков!", "error");
-        return;
-      }
-
-      balance -= currentBet();
-      const rolled = Math.floor(Math.random() * 37);
-      let message = `Выпало: ${rolled}. `;
-
-      if (rolled === number) {
-        const win = currentBet() * 36;
-        balance += win;
-        updateBalance();
-        message += `Вы угадали! +${win} ₽`;
-        playSound("winSound");
-        Swal.fire("Поздравляем!", message, "success");
-        logHistory("roulette", `Угадали ${rolled}, +${win} ₽`);
-      } else {
-        message += "Вы проиграли.";
-        playSound("loseSound");
-        logHistory("roulette", `Ставка: ${number}, выпало: ${rolled}, -${currentBet()} ₽`);
-        Swal.fire("Увы", message, "info");
-      }
-
-      updateBalance();
-    }
-
-    // blackjack (аналогично, с добавлением звуков — по запросу)
-  </script>
+  <script src="script.js"></script>
 </body>
 </html>
