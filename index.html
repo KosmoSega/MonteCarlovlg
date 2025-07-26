@@ -155,11 +155,249 @@
       balanceValue.textContent = balance;
     }
 
+    function showGame(id) {
+      document.querySelectorAll(".game").forEach(g => g.style.display = "none");
+      document.getElementById(id).style.display = "block";
+      if (id === "blackjack") setupBlackjack();
+    }
+
     function logHistory(game, text) {
       const el = document.getElementById(game + 'History');
       const entry = document.createElement('div');
       entry.textContent = new Date().toLocaleTimeString() + ": " + text;
       el.prepend(entry);
+    }
+
+    // Игровой автомат
+    // Слоты — символы Волга, шашлык и напитки, связанные с темой
+const slotSymbols = ["🍖", "🍺", "🍷", "🚤", "🌊", "🥃", "🍻", "🍗"];
+    function playSlots() {
+      const result = [];
+      const reels = document.getElementById("slotReels");
+      reels.innerHTML = "";
+
+      if (balance < currentBet()) {
+        document.getElementById("slotResult").textContent = "Недостаточно рубчиков!";
+        return;
+      }
+
+      balance -= currentBet();
+      updateBalance();
+
+      for (let i = 0; i < 3; i++) {
+        const symbol = slotSymbols[Math.floor(Math.random() * slotSymbols.length)];
+        result.push(symbol);
+        const div = document.createElement("div");
+        div.className = "card";
+        div.textContent = symbol;
+        reels.appendChild(div);
+      }
+
+      const allSame = result.every(s => s === result[0]);
+      let win = 0;
+      if (allSame) {
+        win = currentBet() * 5;
+        balance += win;
+        createConfetti();
+        document.getElementById("slotResult").textContent = `Вы выиграли ${win} ₽!`;
+        logHistory('slot', `Победа на слотах: +${win} ₽`);
+      } else {
+        document.getElementById("slotResult").textContent = "Попробуйте снова!";
+        logHistory('slot', `Проигрыш на слотах: -${currentBet()} ₽`);
+      }
+      updateBalance();
+    }
+
+    // Рулетка
+    function playRoulette() {
+      const number = parseInt(document.getElementById("rouletteNumber").value);
+      if (isNaN(number) || number < 0 || number > 36) {
+        document.getElementById("rouletteResult").textContent = "Введите число от 0 до 36.";
+        return;
+      }
+
+      if (balance < currentBet()) {
+        document.getElementById("rouletteResult").textContent = "Недостаточно рубчиков!";
+        return;
+      }
+
+      balance -= currentBet();
+      const rolled = Math.floor(Math.random() * 37);
+      let result = `Выпало число ${rolled}. `;
+
+      if (rolled === number) {
+        const win = currentBet() * 36;
+        balance += win;
+        result += `Поздравляем! Вы выиграли ${win} ₽!`;
+        createConfetti();
+        logHistory('roulette', `Угадали ${rolled}, выигрыш: +${win} ₽`);
+      } else {
+        result += "Увы, вы проиграли.";
+        logHistory('roulette', `Ставка на ${number}, выпало ${rolled}, проигрыш: -${currentBet()} ₽`);
+      }
+
+      document.getElementById("rouletteResult").textContent = result;
+      updateBalance();
+    }
+
+    // Блэкджек
+    const dealerCardsEl = document.getElementById("dealerCards");
+    const playerCardsEl = document.getElementById("playerCards");
+    const blackjackResult = document.getElementById("blackjackResult");
+    const hitBtn = document.getElementById("hitBtn");
+    const standBtn = document.getElementById("standBtn");
+    const dealBtn = document.getElementById("dealBtn");
+
+    function setupBlackjack() {
+      hitBtn.onclick = hit;
+      standBtn.onclick = stand;
+      dealBtn.onclick = deal;
+      deal();
+    }
+
+    function getCardValue(card) {
+      const value = card.slice(0, -1);
+      if (['J', 'Q', 'K'].includes(value)) return 10;
+      if (value === 'A') return 11;
+      return parseInt(value);
+    }
+
+    function calculateScore(cards) {
+      let total = 0;
+      let aces = 0;
+      cards.forEach(card => {
+        let val = getCardValue(card);
+        total += val;
+        if (val === 11) aces++;
+      });
+      while (total > 21 && aces > 0) {
+        total -= 10;
+        aces--;
+      }
+      return total;
+    }
+
+    function getCardsArray(container) {
+      return [...container.children].filter(card => !card.classList.contains('card-back')).map(card => card.textContent);
+    }
+
+    function addCard(container, hidden = false) {
+      const card = document.createElement('div');
+      card.classList.add('card');
+      const suits = ['♠', '♥', '♦', '♣'];
+      const values = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
+      const suit = suits[Math.floor(Math.random() * suits.length)];
+      const value = values[Math.floor(Math.random() * values.length)];
+      const fullCard = value + suit;
+      if (hidden) {
+        card.classList.add('card-back');
+        card.setAttribute('data-real-value', fullCard);
+      } else {
+        card.textContent = fullCard;
+        card.classList.add(['♥', '♦'].includes(suit) ? 'red' : 'black');
+      }
+      container.appendChild(card);
+    }
+
+    function deal() {
+      dealerCardsEl.innerHTML = '';
+      playerCardsEl.innerHTML = '';
+      blackjackResult.textContent = '';
+
+      if (balance < currentBet()) {
+        blackjackResult.textContent = 'Недостаточно рубчиков!';
+        return;
+      }
+
+      balance -= currentBet();
+      updateBalance();
+
+      addCard(dealerCardsEl, true);
+      addCard(dealerCardsEl);
+      addCard(playerCardsEl);
+      addCard(playerCardsEl);
+    }
+
+    function hit() {
+      addCard(playerCardsEl);
+      const score = calculateScore(getCardsArray(playerCardsEl));
+      if (score > 21) {
+        blackjackResult.textContent = `Перебор! Вы проиграли.`;
+        logHistory('blackjack', `Перебор. Проигрыш: -${currentBet()} ₽`);
+      }
+    }
+
+    function stand() {
+      const dealerHidden = dealerCardsEl.querySelector('.card-back');
+      if (dealerHidden) {
+        const real = dealerHidden.getAttribute('data-real-value');
+        dealerHidden.classList.remove('card-back');
+        dealerHidden.textContent = real;
+        dealerHidden.classList.add(['♥', '♦'].includes(real.slice(-1)) ? 'red' : 'black');
+      }
+
+      while (calculateScore(getCardsArray(dealerCardsEl)) < 17) {
+        addCard(dealerCardsEl);
+      }
+
+      const playerScore = calculateScore(getCardsArray(playerCardsEl));
+      const dealerScore = calculateScore(getCardsArray(dealerCardsEl));
+
+      let message;
+      if (playerScore > 21) {
+        message = 'Вы проиграли.';
+        logHistory('blackjack', `Перебор. -${currentBet()} ₽`);
+      } else if (dealerScore > 21 || playerScore > dealerScore) {
+        const win = currentBet() * 2;
+        balance += win;
+        message = `Вы победили! +${win} ₽`;
+        createConfetti();
+        logHistory('blackjack', `Победа! +${win} ₽`);
+      } else if (playerScore < dealerScore) {
+        message = 'Вы проиграли.';
+        logHistory('blackjack', `Проигрыш. -${currentBet()} ₽`);
+      } else {
+        balance += currentBet();
+        message = 'Ничья. Ставка возвращена.';
+        logHistory('blackjack', `Ничья. 0 ₽`);
+      }
+      updateBalance();
+      blackjackResult.textContent = message;
+    }
+
+    function createConfetti() {
+      const canvas = document.getElementById('confettiCanvas');
+      const ctx = canvas.getContext('2d');
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      const pieces = Array.from({ length: 150 }, () => ({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height - canvas.height,
+        r: Math.random() * 6 + 4,
+        d: Math.random() * 40 + 10,
+        color: `hsl(${Math.random() * 360}, 100%, 50%)`
+      }));
+
+      function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        pieces.forEach(p => {
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+          ctx.fillStyle = p.color;
+          ctx.fill();
+        });
+        update();
+      }
+
+      function update() {
+        pieces.forEach(p => {
+          p.y += Math.cos(p.d / 10) + 1 + p.r / 2;
+          p.x += Math.sin(p.d / 10);
+        });
+      }
+
+      let interval = setInterval(draw, 16);
+      setTimeout(() => clearInterval(interval), 3000);
     }
   </script>
 </body>
