@@ -6,14 +6,10 @@
   <title>🔥 VLG 2025 🔥</title>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/particles.js/2.0.0/particles.min.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=New+Font+Name&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Cinzel:wght@400;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <style>
     :root {
-  --font-main: 'Orbitron', sans-serif;
-  --font-secondary: 'Cinzel', serif;
-  --font-special: 'Arial', sans-serif;
       --primary-gold: #ffd700;
       --secondary-gold: #ffcc00;
       --bronze: #cd7f32;
@@ -1295,67 +1291,134 @@
   }
 
   // === РУССКАЯ РУЛЕТКА ===
+  let selectedNumbers = [];
+  const rouletteCanvas = document.getElementById("rouletteCanvas");
+  const rouletteCtx = rouletteCanvas.getContext("2d");
+  const rouletteSegments = 37;
+  const rouletteColors = Array.from({ length: rouletteSegments }, (_, i) =>
+    i === 0 ? "#0a0" : i % 2 === 0 ? "#000" : "#c00"
+  );
+
+  function createNumberGrid() {
+    const grid = document.getElementById("numberGrid");
+    grid.innerHTML = "";
+    
+    for (let i = 0; i <= 36; i++) {
+      const btn = document.createElement("button");
+      btn.className = "number-btn";
+      btn.textContent = i;
+      btn.onclick = () => toggleNumber(i);
+      grid.appendChild(btn);
+    }
+  }
+
+  function toggleNumber(num) {
+    const btn = event.target;
+    const index = selectedNumbers.indexOf(num);
+    
+    if (index > -1) {
+      selectedNumbers.splice(index, 1);
+      btn.classList.remove('selected');
+    } else {
+      selectedNumbers.push(num);
+      btn.classList.add('selected');
+    }
+  }
+
+  function drawRoulette(angle = 0) {
+    const centerX = rouletteCanvas.width / 2;
+    const centerY = rouletteCanvas.height / 2;
+    const radius = 140;
+    const step = (2 * Math.PI) / rouletteSegments;
+    
+    rouletteCtx.clearRect(0, 0, rouletteCanvas.width, rouletteCanvas.height);
+    
+    for (let i = 0; i < rouletteSegments; i++) {
+      const start = i * step + angle;
+      const end = start + step;
+      
+      rouletteCtx.beginPath();
+      rouletteCtx.moveTo(centerX, centerY);
+      rouletteCtx.arc(centerX, centerY, radius, start, end);
+      rouletteCtx.closePath();
+      rouletteCtx.fillStyle = rouletteColors[i];
+      rouletteCtx.fill();
+      rouletteCtx.strokeStyle = "#ffd700";
+      rouletteCtx.lineWidth = 1;
+      rouletteCtx.stroke();
+      
+      // Числа
+      rouletteCtx.fillStyle = "#fff";
+      rouletteCtx.font = "bold 12px Orbitron";
+      rouletteCtx.textAlign = "center";
+      rouletteCtx.save();
+      rouletteCtx.translate(centerX, centerY);
+      rouletteCtx.rotate(start + step / 2);
+      rouletteCtx.fillText(i, radius - 20, 4);
+      rouletteCtx.restore();
+    }
+    
+    // Центральный круг
+    rouletteCtx.beginPath();
+    rouletteCtx.arc(centerX, centerY, 20, 0, 2 * Math.PI);
+    rouletteCtx.fillStyle = "#ffd700";
+    rouletteCtx.fill();
+  }
+
+  let rouletteAngle = 0;
   function spinRoulette() {
     if (selectedNumbers.length === 0) {
-        Swal.fire("Ошибка", "Выберите хотя бы одно число", "warning");
-        return;
+      Swal.fire("Ошибка", "Выберите хотя бы одно число", "warning");
+      return;
     }
-
+    
     const bet = currentBet();
     if (bet > balance) {
-        Swal.fire("Ошибка", "Недостаточно рубчиков!", "error");
-        return;
+      Swal.fire("Ошибка", "Недостаточно рубчиков!", "error");
+      return;
     }
-
+    
     balance -= bet;
     totalGames++;
     updateStats();
-
-    const rouletteBtn = document.getElementById("rouletteBtn");
-    rouletteBtn.disabled = true;
+    
+    document.getElementById("rouletteBtn").disabled = true;
     playSound('spin');
-
+    
     let spin = 0;
     const spinMax = 80;
-    // Случайное число, которое должно выпасть (0-36)
-    const targetNumber = Math.floor(Math.random() * 37);
-
+    
     function animate() {
-        rouletteAngle += 0.3 + (spinMax - spin) * 0.01;
-        drawRoulette(rouletteAngle);
-        spin++;
-
-        if (spin < spinMax) {
-            requestAnimationFrame(animate);
+      rouletteAngle += 0.3 + (spinMax - spin) * 0.01;
+      drawRoulette(rouletteAngle);
+      spin++;
+      
+      if (spin < spinMax) {
+        requestAnimationFrame(animate);
+      } else {
+        const final = (rouletteSegments - Math.floor((rouletteAngle % (2 * Math.PI)) / ((2 * Math.PI) / rouletteSegments))) % rouletteSegments;
+        
+        if (selectedNumbers.includes(final)) {
+          const win = bet * (36 / selectedNumbers.length);
+          balance += win;
+          totalWins++;
+          winStreak++;
+          playSound('win');
+          Swal.fire("Поздравляем!", `Выпало ${final}! Выигрыш: ${win.toLocaleString()} ₽`, "success");
+          logHistory("roulette", `Выигрыш: +${win.toLocaleString()} ₽ (выпало ${final})`, true);
         } else {
-            // Правильный расчет выпавшего числа
-            const normalizedAngle = rouletteAngle % (2 * Math.PI);
-            // Рассчитываем номер сегмента (0-36)
-            const segmentIndex = Math.floor(normalizedAngle / (2 * Math.PI / rouletteSegments));
-            const final = (rouletteSegments - segmentIndex - 1) % rouletteSegments;
-
-            // Проверка выигрыша с использованием targetNumber
-            if (selectedNumbers.includes(targetNumber)) {
-                const win = bet * (36 / selectedNumbers.length);
-                balance += win;
-                totalWins++;
-                winStreak++;
-                playSound('win');
-                Swal.fire("Поздравляем!", `Выпало ${targetNumber}! Выигрыш: ${win.toLocaleString()} ₽`, "success");
-                logHistory("roulette", `Выигрыш: +${win.toLocaleString()} ₽ (выпало ${targetNumber})`, true);
-            } else {
-                winStreak = 0;
-                playSound('lose');
-                Swal.fire("Не повезло", `Выпало ${targetNumber}. Попробуйте ещё раз!`, "info");
-                logHistory("roulette", `Проигрыш: -${bet.toLocaleString()} ₽ (выпало ${targetNumber})`, false);
-            }
-
-            selectedNumbers = [];
-            document.querySelectorAll('.number-btn').forEach(btn => btn.classList.remove('selected'));
-            rouletteBtn.disabled = false;
-            updateStats();
-            saveGameData();
+          winStreak = 0;
+          playSound('lose');
+          Swal.fire("Не повезло", `Выпало ${final}. Попробуйте ещё раз!`, "info");
+          logHistory("roulette", `Проигрыш: -${bet.toLocaleString()} ₽ (выпало ${final})`, false);
         }
+        
+        selectedNumbers = [];
+        document.querySelectorAll('.number-btn').forEach(btn => btn.classList.remove('selected'));
+        document.getElementById("rouletteBtn").disabled = false;
+        updateStats();
+        saveGameData();
+      }
     }
     animate();
   }
